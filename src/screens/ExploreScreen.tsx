@@ -1,0 +1,491 @@
+import React from 'react';
+import { 
+  View, 
+  StyleSheet, 
+  ScrollView, 
+  Image, 
+  TouchableOpacity, 
+  StatusBar, 
+  Text, 
+  SafeAreaView,
+  FlatList
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation';
+import { mockTrips } from '../mockData/tripData';
+import { MaterialIcons } from '@expo/vector-icons';
+
+type ExploreScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>;
+
+// Mock categories for the explore screen
+const exploreCategories = [
+  {
+    id: '1',
+    title: 'Trips',
+    icon: 'flight',
+    color: '#FF385C',
+  },
+  {
+    id: '2',
+    title: 'Hotels',
+    icon: 'hotel',
+    color: '#00A699',
+  },
+  {
+    id: '3',
+    title: 'Restaurants',
+    icon: 'restaurant',
+    color: '#FF5A5F',
+  },
+  {
+    id: '4',
+    title: 'Experiences',
+    icon: 'local-activity',
+    color: '#914669',
+  },
+];
+
+// Mock featured experiences
+const featuredExperiences = [
+  {
+    id: '1',
+    title: 'Historic City Tour',
+    location: 'Rome, Italy',
+    rating: 4.9,
+    reviews: 128,
+    price: 49,
+    imageUrl: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5',
+    duration: '3 hours',
+  },
+  {
+    id: '2',
+    title: 'Cooking Class',
+    location: 'Paris, France',
+    rating: 4.8,
+    reviews: 86,
+    price: 65,
+    imageUrl: 'https://images.unsplash.com/photo-1556910103-1c02745adc4b',
+    duration: '2 hours',
+  },
+  {
+    id: '3',
+    title: 'Snorkeling Adventure',
+    location: 'Bali, Indonesia',
+    rating: 4.7,
+    reviews: 215,
+    price: 38,
+    imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5',
+    duration: '4 hours',
+  },
+];
+
+// Mock restaurants
+const restaurants = [
+  {
+    id: '1',
+    name: 'The Italian Place',
+    cuisine: 'Italian',
+    rating: 4.6,
+    reviews: 342,
+    priceLevel: '$$',
+    imageUrl: 'https://images.unsplash.com/photo-1592861956120-e524fc739696',
+  },
+  {
+    id: '2',
+    name: 'Sushi Garden',
+    cuisine: 'Japanese',
+    rating: 4.8,
+    reviews: 187,
+    priceLevel: '$$$',
+    imageUrl: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c',
+  },
+  {
+    id: '3',
+    name: 'Burger Joint',
+    cuisine: 'American',
+    rating: 4.5,
+    reviews: 521,
+    priceLevel: '$',
+    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd',
+  },
+];
+
+const ExploreScreen = () => {
+  const navigation = useNavigation<ExploreScreenNavigationProp>();
+
+  const renderCategoryItem = ({ item }) => (
+    <TouchableOpacity style={styles.categoryItem}>
+      <View style={[styles.categoryIcon, { backgroundColor: item.color }]}>
+        <MaterialIcons name={item.icon} size={24} color="#fff" />
+      </View>
+      <Text style={styles.categoryTitle}>{item.title}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderTripItem = ({ item }) => {
+    const startDate = new Date(item.startDate).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+    const endDate = new Date(item.endDate).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+
+    return (
+      <TouchableOpacity
+        style={styles.tripCard}
+        onPress={() => navigation.navigate('TripDetails', { tripId: item.id })}
+      >
+        <Image source={{ uri: item.coverImageUrl }} style={styles.tripImage} />
+        <View style={styles.tripCardContent}>
+          <Text style={styles.tripDestination}>{item.destination}</Text>
+          <Text style={styles.tripTitle} numberOfLines={1}>{item.title}</Text>
+          <Text style={styles.tripDates}>
+            {startDate} - {endDate}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderExperienceItem = ({ item }) => (
+    <TouchableOpacity style={styles.experienceCard}>
+      <Image source={{ uri: item.imageUrl }} style={styles.experienceImage} />
+      <View style={styles.experienceBadge}>
+        <Text style={styles.experienceDuration}>{item.duration}</Text>
+      </View>
+      <View style={styles.experienceCardContent}>
+        <View style={styles.ratingContainer}>
+          <MaterialIcons name="star" size={16} color="#FF385C" />
+          <Text style={styles.rating}>{item.rating} ({item.reviews})</Text>
+        </View>
+        <Text style={styles.experienceTitle} numberOfLines={1}>{item.title}</Text>
+        <Text style={styles.experienceLocation}>{item.location}</Text>
+        <Text style={styles.experiencePrice}>From ${item.price} / person</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderRestaurantItem = ({ item }) => (
+    <TouchableOpacity style={styles.restaurantCard}>
+      <Image source={{ uri: item.imageUrl }} style={styles.restaurantImage} />
+      <View style={styles.restaurantCardContent}>
+        <Text style={styles.restaurantName} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.restaurantCuisine}>{item.cuisine}</Text>
+        <View style={styles.restaurantDetails}>
+          <View style={styles.ratingContainer}>
+            <MaterialIcons name="star" size={14} color="#FF385C" />
+            <Text style={styles.restaurantRating}>{item.rating} ({item.reviews})</Text>
+          </View>
+          <Text style={styles.priceLevel}>{item.priceLevel}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
+      
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Explore</Text>
+      </View>
+      
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Categories */}
+        <View style={styles.categoriesContainer}>
+          <FlatList
+            data={exploreCategories}
+            renderItem={renderCategoryItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesList}
+          />
+        </View>
+        
+        {/* Your Trips Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Your Trips</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Trips')}>
+              <Text style={styles.seeAllButton}>See all</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={mockTrips.slice(0, 2)}
+            renderItem={renderTripItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tripsList}
+          />
+        </View>
+        
+        {/* Recommended Experiences */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Experiences</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllButton}>See all</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={featuredExperiences}
+            renderItem={renderExperienceItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.experiencesList}
+          />
+        </View>
+        
+        {/* Restaurants Near You */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Restaurants Near You</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllButton}>See all</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={restaurants}
+            renderItem={renderRestaurantItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.restaurantsList}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+    backgroundColor: '#fff',
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#222',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollContent: {
+    paddingBottom: 24,
+  },
+  categoriesContainer: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  categoriesList: {
+    paddingHorizontal: 20,
+  },
+  categoryItem: {
+    alignItems: 'center',
+    marginRight: 32,
+  },
+  categoryIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  categoryTitle: {
+    fontSize: 12,
+    color: '#222',
+    fontWeight: '500',
+  },
+  section: {
+    paddingTop: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#222',
+  },
+  seeAllButton: {
+    fontSize: 14,
+    color: '#FF385C',
+    fontWeight: '500',
+  },
+  tripsList: {
+    paddingLeft: 20,
+    paddingRight: 12,
+  },
+  tripCard: {
+    width: 270,
+    marginRight: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tripImage: {
+    width: '100%',
+    height: 150,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  tripCardContent: {
+    padding: 12,
+  },
+  tripDestination: {
+    fontSize: 14,
+    color: '#717171',
+  },
+  tripTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#222',
+    marginVertical: 4,
+  },
+  tripDates: {
+    fontSize: 14,
+    color: '#717171',
+  },
+  experiencesList: {
+    paddingLeft: 20,
+    paddingRight: 12,
+  },
+  experienceCard: {
+    width: 220,
+    marginRight: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  experienceImage: {
+    width: '100%',
+    height: 130,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  experienceBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  experienceDuration: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  experienceCardContent: {
+    padding: 12,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  rating: {
+    fontSize: 14,
+    color: '#222',
+    marginLeft: 4,
+  },
+  experienceTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 4,
+  },
+  experienceLocation: {
+    fontSize: 14,
+    color: '#717171',
+    marginBottom: 4,
+  },
+  experiencePrice: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#222',
+  },
+  restaurantsList: {
+    paddingLeft: 20,
+    paddingRight: 12,
+  },
+  restaurantCard: {
+    width: 180,
+    marginRight: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  restaurantImage: {
+    width: '100%',
+    height: 120,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  restaurantCardContent: {
+    padding: 12,
+  },
+  restaurantName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 4,
+  },
+  restaurantCuisine: {
+    fontSize: 14,
+    color: '#717171',
+    marginBottom: 4,
+  },
+  restaurantDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  restaurantRating: {
+    fontSize: 14,
+    color: '#222',
+    marginLeft: 4,
+  },
+  priceLevel: {
+    fontSize: 14,
+    color: '#717171',
+  },
+});
+
+export default ExploreScreen; 
