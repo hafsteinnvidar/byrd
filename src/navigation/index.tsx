@@ -16,6 +16,7 @@ import ExploreScreen from '../screens/ExploreScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import RestaurantsScreen from '../screens/RestaurantsScreen';
 import RestaurantDetailsScreen from '../screens/RestaurantDetailsScreen';
+import MessagesScreen from '../screens/MessagesScreen';
 
 // Define navigation param types
 export type RootStackParamList = {
@@ -27,12 +28,14 @@ export type RootStackParamList = {
   DayDetails: { tripId: string, dayId: string };
   ActivityDetails: { tripId: string, dayId: string, activityId: string };
   RestaurantDetails: { restaurant: any };
+  Conversation: { conversationId: string };
 };
 
 export type MainTabParamList = {
   Explore: undefined;
   Trips: undefined;
   Restaurants: undefined;
+  Messages: undefined;
   Profile: undefined;
 };
 
@@ -69,6 +72,7 @@ const AppStackNavigator = () => {
       <Stack.Screen name="DayDetails" component={DayDetailsScreen} />
       <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} />
       <Stack.Screen name="RestaurantDetails" component={RestaurantDetailsScreen} />
+      <Stack.Screen name="Conversation" component={MessagesScreen} />
     </Stack.Navigator>
   );
 };
@@ -83,9 +87,11 @@ const MainTabs = () => {
           if (route.name === 'Explore') {
             iconName = 'search';
           } else if (route.name === 'Trips') {
-            iconName = 'apartment';
+            iconName = 'luggage';
           } else if (route.name === 'Restaurants') {
             iconName = 'restaurant';
+          } else if (route.name === 'Messages') {
+            iconName = 'chat-bubble-outline';
           } else if (route.name === 'Profile') {
             iconName = 'person-outline';
           } else {
@@ -104,6 +110,7 @@ const MainTabs = () => {
       <Tab.Screen name="Explore" component={ExploreScreen} />
       <Tab.Screen name="Trips" component={TripsScreen} />
       <Tab.Screen name="Restaurants" component={RestaurantsScreen} />
+      <Tab.Screen name="Messages" component={MessagesScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

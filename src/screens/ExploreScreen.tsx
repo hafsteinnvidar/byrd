@@ -27,12 +27,6 @@ const exploreCategories = [
     color: '#FF385C',
   },
   {
-    id: '2',
-    title: 'Hotels',
-    icon: 'hotel',
-    color: '#00A699',
-  },
-  {
     id: '3',
     title: 'Restaurants',
     icon: 'restaurant',
