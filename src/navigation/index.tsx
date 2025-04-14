@@ -14,6 +14,8 @@ import ActivityDetailsScreen from '../screens/ActivityDetailsScreen';
 import LoginScreen from '../screens/LoginScreen';
 import ExploreScreen from '../screens/ExploreScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import RestaurantsScreen from '../screens/RestaurantsScreen';
+import RestaurantDetailsScreen from '../screens/RestaurantDetailsScreen';
 
 // Define navigation param types
 export type RootStackParamList = {
@@ -24,21 +26,19 @@ export type RootStackParamList = {
   TripDetails: { tripId: string };
   DayDetails: { tripId: string, dayId: string };
   ActivityDetails: { tripId: string, dayId: string, activityId: string };
+  RestaurantDetails: { restaurant: any };
 };
 
 export type MainTabParamList = {
   Explore: undefined;
   Trips: undefined;
-  Messages: undefined;
+  Restaurants: undefined;
   Profile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const AuthStack = createNativeStackNavigator<RootStackParamList>();
-
-// Placeholder screen for Messages tab
-const MessagesScreen = () => <View style={{ flex: 1, backgroundColor: '#f8f9fa' }} />;
 
 // Authentication stack for non-authenticated users
 const AuthStackNavigator = () => {
@@ -68,6 +68,7 @@ const AppStackNavigator = () => {
       <Stack.Screen name="TripDetails" component={TripDetailsScreen} />
       <Stack.Screen name="DayDetails" component={DayDetailsScreen} />
       <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} />
+      <Stack.Screen name="RestaurantDetails" component={RestaurantDetailsScreen} />
     </Stack.Navigator>
   );
 };
@@ -83,8 +84,8 @@ const MainTabs = () => {
             iconName = 'search';
           } else if (route.name === 'Trips') {
             iconName = 'apartment';
-          } else if (route.name === 'Messages') {
-            iconName = 'chat-bubble-outline';
+          } else if (route.name === 'Restaurants') {
+            iconName = 'restaurant';
           } else if (route.name === 'Profile') {
             iconName = 'person-outline';
           } else {
@@ -102,7 +103,7 @@ const MainTabs = () => {
     >
       <Tab.Screen name="Explore" component={ExploreScreen} />
       <Tab.Screen name="Trips" component={TripsScreen} />
-      <Tab.Screen name="Messages" component={MessagesScreen} />
+      <Tab.Screen name="Restaurants" component={RestaurantsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

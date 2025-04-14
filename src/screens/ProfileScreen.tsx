@@ -7,12 +7,14 @@ import {
   StatusBar, 
   Image,
   Text, 
-  SafeAreaView
+  SafeAreaView,
+  Alert
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
 
 // Mock user data
-const user = {
+const mockUser = {
   id: '1',
   firstName: 'Sarah',
   lastName: 'Johnson',
@@ -60,6 +62,22 @@ const settingsItems = [
 ];
 
 const ProfileScreen = () => {
+  const { user, signOut } = useAuth();
+  
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // The user will be redirected to login automatically due to the auth state change
+    } catch (error) {
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
+      console.error('Logout error:', error);
+    }
+  };
+  
+  // Use the authenticated user's email, or fallback to mock data
+  const userEmail = user?.email || mockUser.email;
+  const displayName = userEmail.split('@')[0]; // Use the first part of the email as a name
+  
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
@@ -78,10 +96,10 @@ const ProfileScreen = () => {
       >
         <View style={styles.profileSection}>
           <View style={styles.profileHeader}>
-            <Image source={{ uri: user.avatarUrl }} style={styles.profileImage} />
+            <Image source={{ uri: mockUser.avatarUrl }} style={styles.profileImage} />
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{user.firstName} {user.lastName}</Text>
-              <Text style={styles.profileSubtitle}>Member since {user.joined}</Text>
+              <Text style={styles.profileName}>{displayName}</Text>
+              <Text style={styles.profileEmail}>{userEmail}</Text>
             </View>
           </View>
           
@@ -91,20 +109,20 @@ const ProfileScreen = () => {
           
           <View style={styles.statsContainer}>
             <View style={styles.stat}>
-              <Text style={styles.statValue}>{user.trips}</Text>
+              <Text style={styles.statValue}>{mockUser.trips}</Text>
               <Text style={styles.statLabel}>Trips</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <Text style={styles.statValue}>{user.reviews}</Text>
+              <Text style={styles.statValue}>{mockUser.reviews}</Text>
               <Text style={styles.statLabel}>Reviews</Text>
             </View>
           </View>
           
-          {user.bio && (
+          {mockUser.bio && (
             <View style={styles.bioContainer}>
               <Text style={styles.bioTitle}>About me</Text>
-              <Text style={styles.bioText}>{user.bio}</Text>
+              <Text style={styles.bioText}>{mockUser.bio}</Text>
             </View>
           )}
         </View>
@@ -126,7 +144,7 @@ const ProfileScreen = () => {
         </View>
         
         <View style={styles.actionSection}>
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleLogout}>
             <MaterialIcons name="logout" size={20} color="#FF385C" style={styles.actionIcon} />
             <Text style={styles.actionText}>Log Out</Text>
           </TouchableOpacity>
@@ -192,6 +210,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#222',
     marginBottom: 4,
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: '#717171',
   },
   profileSubtitle: {
     fontSize: 14,
