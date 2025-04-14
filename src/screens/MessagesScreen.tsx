@@ -10,7 +10,7 @@ import {
   SafeAreaView,
   TextInput
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation';
@@ -106,6 +106,11 @@ const MessagesScreen = () => {
     alert(`Message "${newMessage}" sent!`);
     setNewMessage('');
   };
+  
+  const handleBackToMessages = () => {
+    // Use goBack() instead of navigate to return to the previous screen
+    navigation.goBack();
+  };
 
   const renderConversationItem = ({ item }) => (
     <TouchableOpacity 
@@ -146,7 +151,12 @@ const MessagesScreen = () => {
       styles.messageItem,
       item.sender === 'me' ? styles.myMessage : styles.theirMessage
     ]}>
-      <Text style={styles.messageText}>{item.text}</Text>
+      <Text style={[
+        styles.messageText,
+        item.sender === 'me' ? styles.myMessageText : styles.theirMessageText
+      ]}>
+        {item.text}
+      </Text>
       <Text style={styles.messageTime}>{item.time}</Text>
     </View>
   );
@@ -161,7 +171,7 @@ const MessagesScreen = () => {
         <View style={styles.conversationHeader}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.navigate('Messages')}
+            onPress={handleBackToMessages}
           >
             <MaterialIcons name="arrow-back" size={24} color="#222" />
           </TouchableOpacity>
@@ -356,18 +366,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     backgroundColor: '#FF385C',
     borderBottomRightRadius: 4,
-  },
-  theirMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#fff',
-    borderBottomLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  messageText: {
-    fontSize: 16,
-    color: '#fff',
-    marginBottom: 4,
   },
   theirMessage: {
     alignSelf: 'flex-start',
