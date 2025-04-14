@@ -8,7 +8,8 @@ import {
   StatusBar, 
   Text, 
   SafeAreaView,
-  FlatList
+  FlatList,
+  Dimensions
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,6 +18,10 @@ import { mockTrips } from '../mockData/tripData';
 import { MaterialIcons } from '@expo/vector-icons';
 
 type ExploreScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'MainTabs'>;
+
+// Get device width to set consistent card width
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.7; // 70% of screen width
 
 // Mock categories for the explore screen
 const exploreCategories = [
@@ -108,8 +113,19 @@ const restaurants = [
 const ExploreScreen = () => {
   const navigation = useNavigation<ExploreScreenNavigationProp>();
 
+  const handleCategoryPress = (categoryTitle) => {
+    if (categoryTitle === 'Restaurants') {
+      navigation.navigate('RestaurantDetails', { restaurant: restaurants[0] });
+    } else if (categoryTitle === 'Trips') {
+      navigation.navigate('Trips');
+    }
+  };
+
   const renderCategoryItem = ({ item }) => (
-    <TouchableOpacity style={styles.categoryItem}>
+    <TouchableOpacity 
+      style={styles.categoryItem} 
+      onPress={() => handleCategoryPress(item.title)}
+    >
       <View style={[styles.categoryIcon, { backgroundColor: item.color }]}>
         <MaterialIcons name={item.icon} size={24} color="#fff" />
       </View>
@@ -129,13 +145,13 @@ const ExploreScreen = () => {
 
     return (
       <TouchableOpacity
-        style={styles.tripCard}
+        style={styles.cardContainer}
         onPress={() => navigation.navigate('TripDetails', { tripId: item.id })}
       >
-        <Image source={{ uri: item.coverImageUrl }} style={styles.tripImage} />
-        <View style={styles.tripCardContent}>
+        <Image source={{ uri: item.coverImageUrl }} style={styles.cardImage} />
+        <View style={styles.cardContent}>
           <Text style={styles.tripDestination}>{item.destination}</Text>
-          <Text style={styles.tripTitle} numberOfLines={1}>{item.title}</Text>
+          <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
           <Text style={styles.tripDates}>
             {startDate} - {endDate}
           </Text>
@@ -145,29 +161,32 @@ const ExploreScreen = () => {
   };
 
   const renderExperienceItem = ({ item }) => (
-    <TouchableOpacity style={styles.experienceCard}>
-      <Image source={{ uri: item.imageUrl }} style={styles.experienceImage} />
+    <TouchableOpacity style={styles.cardContainer}>
+      <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
       <View style={styles.experienceBadge}>
         <Text style={styles.experienceDuration}>{item.duration}</Text>
       </View>
-      <View style={styles.experienceCardContent}>
+      <View style={styles.cardContent}>
         <View style={styles.ratingContainer}>
           <MaterialIcons name="star" size={16} color="#FF385C" />
           <Text style={styles.rating}>{item.rating} ({item.reviews})</Text>
         </View>
-        <Text style={styles.experienceTitle} numberOfLines={1}>{item.title}</Text>
-        <Text style={styles.experienceLocation}>{item.location}</Text>
+        <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
+        <Text style={styles.cardSubtitle}>{item.location}</Text>
         <Text style={styles.experiencePrice}>From ${item.price} / person</Text>
       </View>
     </TouchableOpacity>
   );
 
   const renderRestaurantItem = ({ item }) => (
-    <TouchableOpacity style={styles.restaurantCard}>
-      <Image source={{ uri: item.imageUrl }} style={styles.restaurantImage} />
-      <View style={styles.restaurantCardContent}>
-        <Text style={styles.restaurantName} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.restaurantCuisine}>{item.cuisine}</Text>
+    <TouchableOpacity 
+      style={styles.cardContainer}
+      onPress={() => navigation.navigate('RestaurantDetails', { restaurant: item })}
+    >
+      <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.cardSubtitle}>{item.cuisine}</Text>
         <View style={styles.restaurantDetails}>
           <View style={styles.ratingContainer}>
             <MaterialIcons name="star" size={14} color="#FF385C" />
@@ -219,7 +238,7 @@ const ExploreScreen = () => {
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tripsList}
+            contentContainerStyle={styles.horizontalList}
           />
         </View>
         
@@ -238,7 +257,7 @@ const ExploreScreen = () => {
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.experiencesList}
+            contentContainerStyle={styles.horizontalList}
           />
         </View>
         
@@ -246,7 +265,7 @@ const ExploreScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Restaurants Near You</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('RestaurantDetails', { restaurant: restaurants[0] })}>
               <Text style={styles.seeAllButton}>See all</Text>
             </TouchableOpacity>
           </View>
@@ -257,7 +276,7 @@ const ExploreScreen = () => {
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.restaurantsList}
+            contentContainerStyle={styles.horizontalList}
           />
         </View>
       </ScrollView>
@@ -333,12 +352,12 @@ const styles = StyleSheet.create({
     color: '#FF385C',
     fontWeight: '500',
   },
-  tripsList: {
+  horizontalList: {
     paddingLeft: 20,
     paddingRight: 12,
   },
-  tripCard: {
-    width: 270,
+  cardContainer: {
+    width: CARD_WIDTH,
     marginRight: 16,
     borderRadius: 12,
     overflow: 'hidden',
@@ -352,45 +371,32 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  tripImage: {
+  cardImage: {
     width: '100%',
     height: 150,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    resizeMode: 'cover',
   },
-  tripCardContent: {
+  cardContent: {
     padding: 12,
   },
-  tripDestination: {
-    fontSize: 14,
-    color: '#717171',
-  },
-  tripTitle: {
+  cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#222',
     marginVertical: 4,
   },
-  tripDates: {
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#717171',
+    marginBottom: 4,
+  },
+  tripDestination: {
     fontSize: 14,
     color: '#717171',
   },
-  experiencesList: {
-    paddingLeft: 20,
-    paddingRight: 12,
-  },
-  experienceCard: {
-    width: 220,
-    marginRight: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-  },
-  experienceImage: {
-    width: '100%',
-    height: 130,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+  tripDates: {
+    fontSize: 14,
+    color: '#717171',
   },
   experienceBadge: {
     position: 'absolute',
@@ -406,9 +412,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
-  experienceCardContent: {
-    padding: 12,
-  },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -419,52 +422,10 @@ const styles = StyleSheet.create({
     color: '#222',
     marginLeft: 4,
   },
-  experienceTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 4,
-  },
-  experienceLocation: {
-    fontSize: 14,
-    color: '#717171',
-    marginBottom: 4,
-  },
   experiencePrice: {
     fontSize: 14,
     fontWeight: '500',
     color: '#222',
-  },
-  restaurantsList: {
-    paddingLeft: 20,
-    paddingRight: 12,
-  },
-  restaurantCard: {
-    width: 180,
-    marginRight: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-  },
-  restaurantImage: {
-    width: '100%',
-    height: 120,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  restaurantCardContent: {
-    padding: 12,
-  },
-  restaurantName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 4,
-  },
-  restaurantCuisine: {
-    fontSize: 14,
-    color: '#717171',
-    marginBottom: 4,
   },
   restaurantDetails: {
     flexDirection: 'row',
