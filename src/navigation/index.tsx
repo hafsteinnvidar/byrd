@@ -15,6 +15,7 @@ import LoginScreen from '../screens/LoginScreen';
 import ExploreScreen from '../screens/ExploreScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import RestaurantDetailsScreen from '../screens/RestaurantDetailsScreen';
+import RestaurantsListScreen from '../screens/RestaurantsListScreen';
 import MessagesScreen from '../screens/MessagesScreen';
 
 // Define navigation param types
@@ -26,6 +27,7 @@ export type RootStackParamList = {
   TripDetails: { tripId: string };
   DayDetails: { tripId: string, dayId: string };
   ActivityDetails: { tripId: string, dayId: string, activityId: string };
+  RestaurantsList: undefined;
   RestaurantDetails: { restaurant: any };
   Conversation: { conversationId: string };
 };
@@ -69,6 +71,7 @@ const AppStackNavigator = () => {
       <Stack.Screen name="TripDetails" component={TripDetailsScreen} />
       <Stack.Screen name="DayDetails" component={DayDetailsScreen} />
       <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} />
+      <Stack.Screen name="RestaurantsList" component={RestaurantsListScreen} />
       <Stack.Screen name="RestaurantDetails" component={RestaurantDetailsScreen} />
       <Stack.Screen name="Conversation" component={MessagesScreen} />
     </Stack.Navigator>

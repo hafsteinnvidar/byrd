@@ -9,7 +9,7 @@ import { Trip, DayItinerary } from '../types';
 type DayDetailsRouteProp = RouteProp<RootStackParamList, 'DayDetails'>;
 
 const { width } = Dimensions.get('window');
-const HEADER_HEIGHT = 250;
+const HEADER_HEIGHT = 300;
 
 const DayDetailsScreen = () => {
   const route = useRoute<DayDetailsRouteProp>();
@@ -43,7 +43,7 @@ const DayDetailsScreen = () => {
   const isFirstDay = dayIndex === 0;
   const isLastDay = dayIndex === trip.days.length - 1;
   
-  // Handle scroll event without using Animated.event
+  // Handle scroll event
   const handleScroll = (event) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     scrollY.setValue(offsetY);
@@ -56,16 +56,11 @@ const DayDetailsScreen = () => {
     extrapolate: 'clamp',
   });
 
-  const imageTranslateY = scrollY.interpolate({
-    inputRange: [0, HEADER_HEIGHT],
-    outputRange: [0, HEADER_HEIGHT / 2],
-    extrapolate: 'clamp',
-  });
-
-  const titleScale = scrollY.interpolate({
-    inputRange: [0, HEADER_HEIGHT / 2, HEADER_HEIGHT],
-    outputRange: [1, 0.9, 0.8],
-    extrapolate: 'clamp',
+  const imageScale = scrollY.interpolate({
+    inputRange: [-300, 0],
+    outputRange: [1.5, 1],
+    extrapolateLeft: 'extend',
+    extrapolateRight: 'clamp',
   });
 
   const formattedDate = new Date(day.date).toLocaleDateString('en-US', {
@@ -79,23 +74,15 @@ const DayDetailsScreen = () => {
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       
       {/* Header Image */}
-      <Animated.View 
-        style={[
-          styles.imageContainer,
-          { transform: [{ translateY: imageTranslateY }] }
-        ]}
-      >
-        <Image 
-          source={{ uri: day.imageUrl || trip.coverImage }} 
-          style={styles.image} 
+      <Animated.View style={styles.imageContainer}>
+        <Animated.Image 
+          source={{ uri: day.imageUrl || trip.coverImageUrl }} 
+          style={[
+            styles.image,
+            { transform: [{ scale: imageScale }] }
+          ]} 
         />
         <View style={styles.imageDarkOverlay} />
-        <TouchableOpacity 
-          style={styles.backButtonAlt}
-          onPress={() => navigation.goBack()}
-        >
-          <MaterialIcons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
       </Animated.View>
       
       {/* Animated Header */}
@@ -111,125 +98,141 @@ const DayDetailsScreen = () => {
         </View>
       </Animated.View>
       
+      <TouchableOpacity 
+        style={styles.backButtonAlt}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialIcons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+      
       <ScrollView
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={handleScroll}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
       >
-        {/* Spacer for header */}
-        <View style={{ height: HEADER_HEIGHT }} />
-        
-        {/* Content */}
-        <View style={styles.content}>
-          <Animated.View style={[styles.titleContainer, { transform: [{ scale: titleScale }] }]}>
-            <Text style={styles.dayNumber}>Day {dayIndex + 1}</Text>
-            <Text style={styles.date}>{formattedDate}</Text>
-          </Animated.View>
-          
-          <View style={styles.navigationButtons}>
-            <TouchableOpacity 
-              style={[styles.navButton, isFirstDay && styles.navButtonDisabled]}
-              disabled={isFirstDay}
-              onPress={() => {
-                if (!isFirstDay) {
-                  navigation.navigate('DayDetails', {
-                    tripId: trip.id,
-                    dayId: trip.days[dayIndex - 1].id
-                  });
-                }
-              }}
-            >
-              <MaterialIcons 
-                name="keyboard-arrow-left" 
-                size={24} 
-                color={isFirstDay ? "#ccc" : "#666"} 
-              />
-              <Text style={[styles.navButtonText, isFirstDay && styles.navButtonTextDisabled]}>
-                Previous Day
-              </Text>
-            </TouchableOpacity>
-            
-            <View style={styles.dayCounter}>
-              <Text style={styles.dayCounterText}>
-                {dayIndex + 1} of {trip.days.length}
-              </Text>
+        <View style={styles.contentWrapper}>
+          <View style={styles.content}>
+            <View style={styles.dateHeader}>
+              <View>
+                <Text style={styles.dayNumber}>Day {dayIndex + 1}</Text>
+                <Text style={styles.date}>{formattedDate}</Text>
+              </View>
+              <View style={styles.dayBadge}>
+                <Text style={styles.dayCount}>{dayIndex + 1}/{trip.days.length}</Text>
+              </View>
             </View>
             
-            <TouchableOpacity 
-              style={[styles.navButton, isLastDay && styles.navButtonDisabled]}
-              disabled={isLastDay}
-              onPress={() => {
-                if (!isLastDay) {
-                  navigation.navigate('DayDetails', {
-                    tripId: trip.id,
-                    dayId: trip.days[dayIndex + 1].id
-                  });
-                }
-              }}
-            >
-              <Text style={[styles.navButtonText, isLastDay && styles.navButtonTextDisabled]}>
-                Next Day
-              </Text>
-              <MaterialIcons 
-                name="keyboard-arrow-right" 
-                size={24} 
-                color={isLastDay ? "#ccc" : "#666"} 
-              />
-            </TouchableOpacity>
-          </View>
-          
-          {day.activities.length > 0 ? (
-            <View style={styles.activitiesContainer}>
+            <View style={styles.navigationButtons}>
+              <TouchableOpacity 
+                style={[styles.navButton, isFirstDay && styles.navButtonDisabled]}
+                disabled={isFirstDay}
+                onPress={() => {
+                  if (!isFirstDay) {
+                    navigation.navigate('DayDetails', {
+                      tripId: trip.id,
+                      dayId: trip.days[dayIndex - 1].id
+                    });
+                  }
+                }}
+              >
+                <MaterialIcons 
+                  name="arrow-back-ios" 
+                  size={16} 
+                  color={isFirstDay ? "#ccc" : "#666"} 
+                />
+                <Text style={[styles.navButtonText, isFirstDay && styles.navButtonTextDisabled]}>
+                  Previous
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.navButton, isLastDay && styles.navButtonDisabled]}
+                disabled={isLastDay}
+                onPress={() => {
+                  if (!isLastDay) {
+                    navigation.navigate('DayDetails', {
+                      tripId: trip.id,
+                      dayId: trip.days[dayIndex + 1].id
+                    });
+                  }
+                }}
+              >
+                <Text style={[styles.navButtonText, isLastDay && styles.navButtonTextDisabled]}>
+                  Next
+                </Text>
+                <MaterialIcons 
+                  name="arrow-forward-ios" 
+                  size={16} 
+                  color={isLastDay ? "#ccc" : "#666"} 
+                />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.activitiesSection}>
               <Text style={styles.sectionTitle}>Activities</Text>
               
-              {day.activities.map((activity, index) => (
-                <TouchableOpacity 
-                  key={activity.id} 
-                  style={styles.activityCard}
-                  onPress={() => navigation.navigate('ActivityDetails', {
-                    tripId: trip.id,
-                    dayId: day.id,
-                    activityId: activity.id
-                  })}
-                >
-                  <View style={styles.activityTime}>
-                    <Text style={styles.activityTimeText}>{activity.startTime}</Text>
-                    <View style={styles.timelineContainer}>
-                      <View style={styles.timelineDot} />
-                      {index < day.activities.length - 1 && <View style={styles.timelineLine} />}
-                    </View>
-                  </View>
-                  
-                  <View style={styles.activityContent}>
-                    <View style={styles.activityHeader}>
-                      <Text style={styles.activityTitle}>{activity.title}</Text>
-                      <Text style={styles.activityDuration}>
-                        {activity.startTime} - {activity.endTime}
-                      </Text>
-                    </View>
-                    <View style={styles.activityLocation}>
-                      <MaterialIcons name="location-on" size={16} color="#666" />
-                      <Text style={styles.activityLocationText}>{activity.location}</Text>
-                    </View>
-                    {activity.imageUrl && (
-                      <Image source={{ uri: activity.imageUrl }} style={styles.activityImage} />
-                    )}
-                    <Text style={styles.activityDescription} numberOfLines={2}>
-                      {activity.description}
-                    </Text>
-                    <View style={styles.activityCardFooter}>
-                      <MaterialIcons name="arrow-forward" size={20} color="#666" />
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
+              {day.activities.length > 0 ? (
+                <View style={styles.timeline}>
+                  {day.activities.map((activity, index) => (
+                    <TouchableOpacity 
+                      key={activity.id} 
+                      style={styles.activityCard}
+                      onPress={() => navigation.navigate('ActivityDetails', {
+                        tripId: trip.id,
+                        dayId: day.id,
+                        activityId: activity.id
+                      })}
+                    >
+                      <View style={styles.timeColumn}>
+                        <Text style={styles.activityTime}>{activity.startTime}</Text>
+                        <View style={styles.timelineDot} />
+                        {index < day.activities.length - 1 && (
+                          <View style={styles.timelineConnector} />
+                        )}
+                      </View>
+                      
+                      <View style={styles.activityContent}>
+                        <Text style={styles.activityTitle}>{activity.title}</Text>
+                        <View style={styles.activityDetails}>
+                          <View style={styles.activityDetail}>
+                            <MaterialIcons name="access-time" size={14} color="#666" />
+                            <Text style={styles.activityDetailText}>
+                              {activity.startTime} - {activity.endTime}
+                            </Text>
+                          </View>
+                          <View style={styles.activityDetail}>
+                            <MaterialIcons name="location-on" size={14} color="#666" />
+                            <Text style={styles.activityDetailText}>{activity.location}</Text>
+                          </View>
+                        </View>
+                        
+                        {activity.imageUrl && (
+                          <Image source={{ uri: activity.imageUrl }} style={styles.activityImage} />
+                        )}
+                        
+                        <Text style={styles.activityDescription} numberOfLines={2}>
+                          {activity.description}
+                        </Text>
+                        
+                        <View style={styles.viewDetailsButton}>
+                          <Text style={styles.viewDetailsText}>View details</Text>
+                          <MaterialIcons name="arrow-forward-ios" size={12} color="#FF385C" />
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <MaterialIcons name="event-busy" size={60} color="#ddd" />
+                  <Text style={styles.emptyText}>No activities scheduled for this day</Text>
+                  <Text style={styles.emptySubtext}>Enjoy your free time or explore on your own</Text>
+                </View>
+              )}
             </View>
-          ) : (
-            <View style={styles.emptyContainer}>
-              <MaterialIcons name="event-busy" size={60} color="#ccc" />
-              <Text style={styles.emptyText}>No activities scheduled for this day</Text>
-            </View>
-          )}
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -239,12 +242,33 @@ const DayDetailsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingTop: HEADER_HEIGHT - 30,
+  },
+  contentWrapper: {
+    marginTop: -30,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: 'hidden',
+  },
+  content: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    minHeight: Dimensions.get('window').height - HEADER_HEIGHT + 50,
   },
   header: {
     position: 'absolute',
@@ -252,7 +276,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 90,
-    padding: 16,
     zIndex: 10,
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
@@ -260,6 +283,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 40,
+    paddingHorizontal: 16,
   },
   backButton: {
     width: 40,
@@ -296,160 +320,205 @@ const styles = StyleSheet.create({
   },
   backButtonAlt: {
     position: 'absolute',
-    top: 40,
+    top: 50,
     left: 16,
     width: 40,
     height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 5,
   },
-  content: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    marginTop: -24,
-    padding: 20,
-    paddingTop: 20,
-    zIndex: 5,
-  },
-  titleContainer: {
-    marginBottom: 20,
-  },
-  dayNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  date: {
-    fontSize: 18,
-    color: '#666',
-  },
-  navigationButtons: {
+  dateHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
   },
+  dayNumber: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 4,
+  },
+  date: {
+    fontSize: 16,
+    color: '#666',
+  },
+  dayBadge: {
+    backgroundColor: '#FF385C',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  dayCount: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  navigationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
   navButton: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   navButtonDisabled: {
     backgroundColor: '#f0f0f0',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   navButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#222',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginHorizontal: 6,
   },
   navButtonTextDisabled: {
     color: '#ccc',
   },
-  dayCounter: {
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-  },
-  dayCounterText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#222',
-  },
-  activitiesContainer: {
-    marginBottom: 20,
+  activitiesSection: {
+    marginTop: 8,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
     color: '#222',
+    marginBottom: 20,
+  },
+  timeline: {
+    paddingLeft: 8,
   },
   activityCard: {
     flexDirection: 'row',
     marginBottom: 20,
   },
-  activityTime: {
-    width: 80,
+  timeColumn: {
+    width: 60,
     alignItems: 'center',
+    marginRight: 16,
   },
-  activityTimeText: {
+  activityTime: {
     fontSize: 14,
     fontWeight: '600',
     color: '#444',
-  },
-  timelineContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 8,
   },
   timelineDot: {
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#1a73e8',
-    marginRight: 8,
+    backgroundColor: '#FF385C',
+    marginTop: 4,
+    marginBottom: 8,
+    zIndex: 2,
   },
-  timelineLine: {
-    flex: 1,
-    height: 2,
+  timelineConnector: {
+    width: 2,
     backgroundColor: '#e0e0e0',
+    height: '100%',
+    position: 'absolute',
+    top: 28,
+    left: 30,
+    bottom: 0,
   },
   activityContent: {
     flex: 1,
-    paddingLeft: 16,
-  },
-  activityHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   activityTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#222',
+    marginBottom: 12,
   },
-  activityDuration: {
-    fontSize: 14,
-    color: '#666',
+  activityDetails: {
+    marginBottom: 12,
   },
-  activityLocation: {
+  activityDetail: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  activityLocationText: {
+  activityDetailText: {
     fontSize: 14,
     color: '#666',
-    marginLeft: 8,
+    marginLeft: 6,
   },
   activityImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 8,
-    marginBottom: 8,
+    width: '100%',
+    height: 160,
+    borderRadius: 12,
+    marginBottom: 12,
   },
   activityDescription: {
     fontSize: 14,
     color: '#444',
-    lineHeight: 22,
+    lineHeight: 20,
+    marginBottom: 12,
   },
-  activityCardFooter: {
+  viewDetailsButton: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  viewDetailsText: {
+    fontSize: 14,
+    color: '#FF385C',
+    fontWeight: '600',
+    marginRight: 4,
   },
   emptyContainer: {
-    padding: 20,
+    padding: 30,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    fontWeight: 'bold',
+    color: '#444',
     marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 8,
     textAlign: 'center',
   },
 });

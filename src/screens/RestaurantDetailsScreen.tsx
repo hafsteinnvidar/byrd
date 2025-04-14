@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -10,7 +10,8 @@ import {
   SafeAreaView, 
   Linking, 
   Platform,
-  Share
+  Share,
+  Animated
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -22,6 +23,7 @@ const RestaurantDetailsScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RestaurantDetailsRouteProp>();
   const { restaurant } = route.params;
+  const scrollY = new Animated.Value(0);
 
   const handleCall = () => {
     if (restaurant.phoneNumber !== 'N/A') {
@@ -43,14 +45,21 @@ const RestaurantDetailsScreen = () => {
     }
   };
 
+  const handleScroll = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    scrollY.setValue(offsetY);
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+    <View style={styles.container}>
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       
       <ScrollView
-        style={styles.container}
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={handleScroll}
       >
         <View style={styles.imageContainer}>
           <Image 
@@ -58,12 +67,6 @@ const RestaurantDetailsScreen = () => {
             style={styles.restaurantImage} 
           />
           <View style={styles.imageDarkOverlay} />
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
         </View>
         
         <View style={styles.content}>
@@ -160,24 +163,31 @@ const RestaurantDetailsScreen = () => {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialIcons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingBottom: 24,
   },
   imageContainer: {
-    height: 250,
-    position: 'relative',
+    height: 300,
+    width: '100%',
   },
   restaurantImage: {
     width: '100%',
@@ -202,6 +212,10 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    backgroundColor: '#f5f5f5',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginTop: -20,
   },
   restaurantHeader: {
     flexDirection: 'row',

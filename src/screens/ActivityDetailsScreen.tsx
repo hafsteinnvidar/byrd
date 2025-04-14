@@ -70,7 +70,6 @@ const ActivityDetailsScreen = () => {
   const isLastActivity = activityIndex === day.activities.length - 1;
   const dayNumber = trip.days.findIndex(d => d.id === day.id) + 1;
 
-  // Handle scroll event without using Animated.event
   const handleScroll = (event) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     scrollY.setValue(offsetY);

@@ -10,7 +10,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 type TripDetailsRouteProp = RouteProp<RootStackParamList, 'TripDetails'>;
 type TripDetailsNavigationProp = NativeStackNavigationProp<RootStackParamList, 'TripDetails'>;
 
-const HEADER_MAX_HEIGHT = 300;
+const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
 const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
@@ -41,15 +41,9 @@ const TripDetailsScreen = () => {
     extrapolate: 'clamp',
   });
 
-  const headerBackgroundOpacity = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
-    outputRange: [0, 0.5, 1],
-    extrapolate: 'clamp',
-  });
-
   const imageScale = scrollY.interpolate({
     inputRange: [-300, 0],
-    outputRange: [2, 1],
+    outputRange: [1.5, 1],
     extrapolateLeft: 'extend',
     extrapolateRight: 'clamp',
   });
@@ -75,11 +69,10 @@ const TripDetailsScreen = () => {
         
         <View style={styles.dayContent}>
           <View style={styles.dayHeader}>
-            <Text style={styles.dayTitle}>Day {index + 1}</Text>
-            <Text style={styles.dayDate}>{date}</Text>
+            <Text style={styles.dayTitle}>{date}</Text>
           </View>
           
-          {item.activities.length > 0 && (
+          {item.activities.length > 0 ? (
             <View style={styles.activitiesPreview}>
               {item.activities[0].imageUrl ? (
                 <Image 
@@ -93,9 +86,11 @@ const TripDetailsScreen = () => {
               )}
               
               <View style={styles.activityInfo}>
-                <Text style={styles.activityCount}>
-                  {item.activities.length} {item.activities.length === 1 ? 'activity' : 'activities'}
-                </Text>
+                <View style={styles.activityCountBadge}>
+                  <Text style={styles.activityCount}>
+                    {item.activities.length} {item.activities.length === 1 ? 'activity' : 'activities'}
+                  </Text>
+                </View>
                 <Text style={styles.activityTitle} numberOfLines={1}>
                   {item.activities[0].title}
                 </Text>
@@ -103,9 +98,15 @@ const TripDetailsScreen = () => {
                   {item.activities[0].location}
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color="#ddd" />
+            </View>
+          ) : (
+            <View style={styles.noActivitiesContainer}>
+              <Text style={styles.noActivitiesText}>No activities planned for this day</Text>
             </View>
           )}
+          <View style={styles.dayCardFooter}>
+            <MaterialIcons name="arrow-forward" size={20} color="#FF385C" />
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -129,7 +130,7 @@ const TripDetailsScreen = () => {
     day: 'numeric'
   });
 
-  // Handle scroll event without using Animated.event
+  // Handle scroll event 
   const handleScroll = (event) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     scrollY.setValue(offsetY);
@@ -141,18 +142,6 @@ const TripDetailsScreen = () => {
       
       {/* Animated header */}
       <Animated.View style={[styles.header, { height: headerHeight }]}>
-        <Animated.View 
-          style={[
-            styles.headerBackground, 
-            { opacity: headerBackgroundOpacity }
-          ]}
-        />
-        <Animated.View style={[styles.headerTitleContainer, { opacity: headerTitleOpacity }]}>
-          <Text style={styles.headerTitle}>{trip.destination}</Text>
-          <Text style={styles.headerSubtitle}>
-            {formattedStartDate} – {formattedEndDate}
-          </Text>
-        </Animated.View>
         <Animated.Image 
           source={{ uri: trip.coverImageUrl }} 
           style={[
@@ -160,6 +149,16 @@ const TripDetailsScreen = () => {
             { transform: [{ scale: imageScale }] }
           ]} 
         />
+        <View style={styles.headerOverlay} />
+        <Animated.View 
+          style={[
+            styles.headerBackground, 
+            { opacity: headerTitleOpacity }
+          ]}
+        />
+        <Animated.View style={[styles.headerTitleContainer, { opacity: headerTitleOpacity }]}>
+          <Text style={styles.headerTitle}>{trip.destination}</Text>
+        </Animated.View>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -174,51 +173,49 @@ const TripDetailsScreen = () => {
         scrollEventThrottle={16}
         onScroll={handleScroll}
       >
-        <View style={styles.mainInfo}>
-          <Text style={styles.title}>{trip.title}</Text>
-          <View style={styles.locationContainer}>
-            <MaterialIcons name="location-on" size={16} color="#717171" />
-            <Text style={styles.location}>{trip.destination}</Text>
-          </View>
-          
-          <View style={styles.detailsCard}>
-            <View style={styles.detailRow}>
-              <View style={styles.detailItem}>
-                <MaterialIcons name="event" size={20} color="#222" />
-                <Text style={styles.detailText}>
+        <View style={styles.contentContainer}>
+          <View style={styles.mainInfo}>
+            <Text style={styles.title}>{trip.title}</Text>
+            <View style={styles.infoRow}>
+              <View style={styles.infoItem}>
+                <MaterialIcons name="event" size={20} color="#666" />
+                <Text style={styles.infoText}>
                   {formattedStartDate} – {formattedEndDate}
                 </Text>
               </View>
-              <View style={styles.detailItem}>
-                <MaterialIcons name="alarm" size={20} color="#222" />
-                <Text style={styles.detailText}>
-                  {trip.days.length} {trip.days.length === 1 ? 'day' : 'days'}
-                </Text>
+              <View style={styles.infoItem}>
+                <MaterialIcons name="location-on" size={20} color="#666" />
+                <Text style={styles.infoText}>{trip.destination}</Text>
               </View>
             </View>
             
-            <View style={styles.hostInfo}>
-              <View style={styles.hostIcon}>
-                <MaterialIcons name="business" size={20} color="#fff" />
+            <View style={styles.agencyContainer}>
+              <View style={styles.agencyIconContainer}>
+                <MaterialIcons name="business" size={24} color="#fff" />
               </View>
-              <View style={styles.hostDetails}>
-                <Text style={styles.hostedByLabel}>Hosted by</Text>
-                <Text style={styles.hostedByName}>{trip.travelAgency}</Text>
+              <View style={styles.agencyInfo}>
+                <Text style={styles.agencyLabel}>Travel Agency</Text>
+                <Text style={styles.agencyName}>{trip.travelAgency}</Text>
               </View>
+            </View>
+            
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.descriptionTitle}>About this trip</Text>
+              <Text style={styles.description}>{trip.description}</Text>
             </View>
           </View>
           
-          <Text style={styles.description}>{trip.description}</Text>
-        </View>
-        
-        <View style={styles.itinerarySection}>
-          <Text style={styles.sectionTitle}>Trip Itinerary</Text>
-          
-          {trip.days.map((day, index) => (
-            <View key={day.id}>
-              {renderDayItem({ item: day, index })}
+          <View style={styles.itineraryContainer}>
+            <Text style={styles.sectionTitle}>Itinerary</Text>
+            
+            <View style={styles.daysContainer}>
+              {trip.days.map((day, index) => (
+                <View key={day.id}>
+                  {renderDayItem({ item: day, index })}
+                </View>
+              ))}
             </View>
-          ))}
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -228,7 +225,7 @@ const TripDetailsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f5f5f5',
   },
   loadingContainer: {
     flex: 1,
@@ -249,7 +246,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#fff',
+    backgroundColor: '#222',
     zIndex: 1,
   },
   headerTitleContainer: {
@@ -257,16 +254,12 @@ const styles = StyleSheet.create({
     bottom: 16,
     left: 16,
     right: 16,
-    zIndex: 2,
+    zIndex: 3,
   },
   headerTitle: {
-    color: '#000',
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  headerSubtitle: {
-    color: '#717171',
-    fontSize: 14,
   },
   headerImage: {
     position: 'absolute',
@@ -277,139 +270,156 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    zIndex: 1,
+  },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    zIndex: 2,
   },
   backButton: {
     position: 'absolute',
     top: 50,
     left: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 3,
+    zIndex: 4,
   },
   scrollContent: {
-    paddingTop: HEADER_MAX_HEIGHT,
-    paddingBottom: 24,
+    paddingTop: HEADER_MAX_HEIGHT - 30,
+  },
+  contentContainer: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    backgroundColor: '#f5f5f5',
+    paddingBottom: 40,
+    marginTop: -30,
   },
   mainInfo: {
     padding: 20,
     backgroundColor: '#fff',
-    marginBottom: 8,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 8,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#222',
+    marginBottom: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
     marginBottom: 8,
   },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  location: {
-    fontSize: 16,
-    color: '#717171',
-    marginLeft: 4,
-  },
-  detailsCard: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  detailText: {
+  infoText: {
     fontSize: 14,
-    color: '#222',
-    marginLeft: 8,
+    color: '#666',
+    marginLeft: 6,
   },
-  hostInfo: {
+  agencyContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
+    marginBottom: 20,
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
   },
-  hostIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  agencyIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#FF385C',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
-  hostDetails: {
+  agencyInfo: {
     flex: 1,
   },
-  hostedByLabel: {
+  agencyLabel: {
     fontSize: 12,
-    color: '#717171',
+    color: '#666',
   },
-  hostedByName: {
-    fontSize: 14,
-    fontWeight: '500',
+  agencyName: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#222',
   },
+  descriptionContainer: {
+    marginTop: 4,
+  },
+  descriptionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 8,
+  },
   description: {
-    fontSize: 16,
+    fontSize: 15,
     lineHeight: 24,
     color: '#444',
   },
-  itinerarySection: {
+  itineraryContainer: {
     padding: 20,
-    backgroundColor: '#fff',
+    paddingBottom: 0,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#222',
     marginBottom: 16,
   },
+  daysContainer: {},
   dayCard: {
     flexDirection: 'row',
-    marginBottom: 16,
-    borderRadius: 12,
     backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 8,
     overflow: 'hidden',
   },
   dayNumberBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f8f9fa',
-    justifyContent: 'center',
+    width: 56,
     alignItems: 'center',
-    margin: 12,
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: '#FF385C',
   },
   dayNumber: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#222',
+    color: '#fff',
   },
   dayContent: {
     flex: 1,
-    padding: 12,
+    padding: 16,
   },
   dayHeader: {
     marginBottom: 12,
@@ -419,25 +429,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#222',
   },
-  dayDate: {
-    fontSize: 14,
-    color: '#717171',
-  },
   activitiesPreview: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   activityImage: {
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
     borderRadius: 8,
     marginRight: 12,
   },
   activityImagePlaceholder: {
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
     borderRadius: 8,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -445,20 +451,43 @@ const styles = StyleSheet.create({
   activityInfo: {
     flex: 1,
   },
+  activityCountBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 6,
+  },
   activityCount: {
     fontSize: 12,
-    color: '#717171',
-    marginBottom: 4,
+    color: '#666',
   },
   activityTitle: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
     color: '#222',
+    marginBottom: 4,
   },
   activityLocation: {
-    fontSize: 12,
-    color: '#717171',
-  }
+    fontSize: 13,
+    color: '#666',
+  },
+  dayCardFooter: {
+    alignItems: 'flex-end',
+    marginTop: 8,
+  },
+  noActivitiesContainer: {
+    padding: 12,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  noActivitiesText: {
+    fontSize: 14,
+    color: '#888',
+    fontStyle: 'italic',
+  },
 });
 
 export default TripDetailsScreen; 

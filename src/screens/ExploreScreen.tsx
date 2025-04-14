@@ -83,30 +83,30 @@ const featuredExperiences = [
 const restaurants = [
   {
     id: '1',
-    name: 'The Italian Place',
-    cuisine: 'Italian',
-    rating: 4.6,
+    name: 'Dill Restaurant',
+    cuisine: 'Nordic',
+    rating: 4.8,
     reviews: 342,
-    priceLevel: '$$',
-    imageUrl: 'https://images.unsplash.com/photo-1592861956120-e524fc739696',
+    priceLevel: '$$$$',
+    imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
   },
   {
     id: '2',
-    name: 'Sushi Garden',
-    cuisine: 'Japanese',
-    rating: 4.8,
+    name: 'Matur og Drykkur',
+    cuisine: 'Icelandic',
+    rating: 4.6,
     reviews: 187,
     priceLevel: '$$$',
-    imageUrl: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c',
+    imageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
   },
   {
     id: '3',
-    name: 'Burger Joint',
-    cuisine: 'American',
-    rating: 4.5,
+    name: 'Fiskfélagið',
+    cuisine: 'Seafood',
+    rating: 4.7,
     reviews: 521,
-    priceLevel: '$',
-    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd',
+    priceLevel: '$$$',
+    imageUrl: 'https://images.unsplash.com/photo-1579027989536-b7b1f875659b',
   },
 ];
 
@@ -115,7 +115,7 @@ const ExploreScreen = () => {
 
   const handleCategoryPress = (categoryTitle) => {
     if (categoryTitle === 'Restaurants') {
-      navigation.navigate('RestaurantDetails', { restaurant: restaurants[0] });
+      navigation.navigate('RestaurantsList');
     } else if (categoryTitle === 'Trips') {
       navigation.navigate('Trips');
     }
@@ -265,7 +265,7 @@ const ExploreScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Restaurants Near You</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('RestaurantDetails', { restaurant: restaurants[0] })}>
+            <TouchableOpacity onPress={() => navigation.navigate('RestaurantsList')}>
               <Text style={styles.seeAllButton}>See all</Text>
             </TouchableOpacity>
           </View>
@@ -287,13 +287,13 @@ const ExploreScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   headerTitle: {
     fontSize: 32,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   scrollContent: {
     paddingBottom: 24,
@@ -365,11 +365,13 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 8,
+    marginBottom: 6,
+    marginTop: 4,
   },
   cardImage: {
     width: '100%',
