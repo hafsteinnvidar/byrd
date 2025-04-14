@@ -50,7 +50,7 @@ const LoginScreen = () => {
 
   return (
     <ImageBackground
-      source={require('../../assets/byrd-bg.png')}
+      source={require('../assets/byrd-bg.png')}
       style={styles.backgroundImage}
       resizeMode="cover"
     >

@@ -14,7 +14,6 @@ import ActivityDetailsScreen from '../screens/ActivityDetailsScreen';
 import LoginScreen from '../screens/LoginScreen';
 import ExploreScreen from '../screens/ExploreScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import RestaurantsScreen from '../screens/RestaurantsScreen';
 import RestaurantDetailsScreen from '../screens/RestaurantDetailsScreen';
 import MessagesScreen from '../screens/MessagesScreen';
 
@@ -34,7 +33,6 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   Explore: undefined;
   Trips: undefined;
-  Restaurants: undefined;
   Messages: undefined;
   Profile: undefined;
 };
@@ -88,8 +86,6 @@ const MainTabs = () => {
             iconName = 'search';
           } else if (route.name === 'Trips') {
             iconName = 'luggage';
-          } else if (route.name === 'Restaurants') {
-            iconName = 'restaurant';
           } else if (route.name === 'Messages') {
             iconName = 'chat-bubble-outline';
           } else if (route.name === 'Profile') {
@@ -109,7 +105,6 @@ const MainTabs = () => {
     >
       <Tab.Screen name="Explore" component={ExploreScreen} />
       <Tab.Screen name="Trips" component={TripsScreen} />
-      <Tab.Screen name="Restaurants" component={RestaurantsScreen} />
       <Tab.Screen name="Messages" component={MessagesScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
