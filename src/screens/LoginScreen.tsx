@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, TouchableOpacity, TextInput as RNTextInput } from 'react-native';
+import { View, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, TouchableOpacity, TextInput as RNTextInput, ActivityIndicator, Alert } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -12,12 +13,39 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { signIn } = useAuth();
 
-  const handleLogin = () => {
-    // Will be replaced with Supabase authentication later
-    // For now, navigate to main tabs with any input
-    navigation.navigate('MainTabs');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        Alert.alert('Error', error.message || 'Failed to sign in');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred');
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = () => {
+    // Navigate to register screen when implemented
+    Alert.alert('Sign Up', 'Create an account to continue');
+  };
+
+  const handleForgotPassword = () => {
+    // Navigate to forgot password screen when implemented
+    Alert.alert('Forgot Password', 'We\'ll send you a password reset link');
   };
 
   return (
@@ -46,6 +74,7 @@ const LoginScreen = () => {
                   keyboardType="email-address"
                   placeholder="Email Address"
                   placeholderTextColor="#fff"
+                  editable={!isLoading}
                 />
               </View>
               
@@ -58,10 +87,12 @@ const LoginScreen = () => {
                     secureTextEntry={!showPassword}
                     placeholder="Password"
                     placeholderTextColor="#fff"
+                    editable={!isLoading}
                   />
                   <TouchableOpacity 
                     style={styles.eyeIcon}
                     onPress={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
                   >
                     <MaterialIcons 
                       name={showPassword ? "visibility" : "visibility-off"} 
@@ -73,7 +104,7 @@ const LoginScreen = () => {
               </View>
               
               <View style={styles.forgotPasswordContainer}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={handleForgotPassword} disabled={isLoading}>
                   <Text style={styles.forgotPassword}>Forgot password?</Text>
                 </TouchableOpacity>
               </View>
@@ -84,9 +115,21 @@ const LoginScreen = () => {
                 style={styles.loginButton}
                 contentStyle={styles.loginButtonContent}
                 labelStyle={styles.loginButtonText}
+                disabled={isLoading}
               >
-                Login
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#333" />
+                ) : (
+                  'Login'
+                )}
               </Button>
+              
+              <View style={styles.signUpContainer}>
+                <Text style={styles.noAccountText}>Don't have an account?</Text>
+                <TouchableOpacity onPress={handleSignUp} disabled={isLoading}>
+                  <Text style={styles.signUpText}>Sign up</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -182,6 +225,21 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#000000',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  signUpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  noAccountText: {
+    color: '#ffffff',
+    fontSize: 14,
+    marginRight: 5,
+  },
+  signUpText: {
+    color: '#ffffff',
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

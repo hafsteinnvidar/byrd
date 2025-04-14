@@ -2,9 +2,9 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Trip } from '../types';
+import { useAuth } from '../context/AuthContext';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { View, StyleSheet } from 'react-native';
 
 // Screens
 import TripsScreen from '../screens/TripsScreen';
@@ -18,6 +18,8 @@ import ProfileScreen from '../screens/ProfileScreen';
 // Define navigation param types
 export type RootStackParamList = {
   Login: undefined;
+  Register: undefined;
+  ForgotPassword: undefined;
   MainTabs: undefined;
   TripDetails: { tripId: string };
   DayDetails: { tripId: string, dayId: string };
@@ -33,9 +35,42 @@ export type MainTabParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
+const AuthStack = createNativeStackNavigator<RootStackParamList>();
 
 // Placeholder screen for Messages tab
 const MessagesScreen = () => <View style={{ flex: 1, backgroundColor: '#f8f9fa' }} />;
+
+// Authentication stack for non-authenticated users
+const AuthStackNavigator = () => {
+  return (
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: '#fff' },
+      }}
+    >
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      {/* Additional auth screens would go here */}
+    </AuthStack.Navigator>
+  );
+};
+
+// Main app stack for authenticated users
+const AppStackNavigator = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: '#fff' },
+      }}
+    >
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="TripDetails" component={TripDetailsScreen} />
+      <Stack.Screen name="DayDetails" component={DayDetailsScreen} />
+      <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} />
+    </Stack.Navigator>
+  );
+};
 
 const MainTabs = () => {
   return (
@@ -74,29 +109,30 @@ const MainTabs = () => {
 };
 
 export const Navigation = () => {
-  // For now, always start with the login screen
-  const isAuthenticated = false;
+  const { user, loading } = useAuth();
+  
+  // Show loading screen while checking authentication
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FF385C" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName={isAuthenticated ? 'MainTabs' : 'Login'}
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: '#fff' },
-        }}
-      >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="MainTabs" component={MainTabs} />
-        <Stack.Screen name="TripDetails" component={TripDetailsScreen} />
-        <Stack.Screen name="DayDetails" component={DayDetailsScreen} />
-        <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} />
-      </Stack.Navigator>
+      {user ? <AppStackNavigator /> : <AuthStackNavigator />}
     </NavigationContainer>
   );
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   tabBar: {
     height: 80,
     paddingTop: 10,

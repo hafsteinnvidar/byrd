@@ -5,7 +5,7 @@ A mobile application for travel agencies to share trip itineraries with their cu
 ## Features
 
 - Cross-platform (iOS and Android) mobile app
-- User authentication (to be implemented with Supabase)
+- User authentication with Supabase
 - View list of upcoming trips
 - Detailed trip itineraries
 - Day-by-day activity breakdown
@@ -18,7 +18,7 @@ A mobile application for travel agencies to share trip itineraries with their cu
 - TypeScript
 - React Navigation
 - React Native Paper (UI components)
-- Supabase (to be implemented later for authentication and database)
+- Supabase (authentication and database)
 
 ## Project Structure
 
@@ -28,6 +28,7 @@ The project follows a structured organization:
 /src
   /screens         # App screens/pages
   /components      # Reusable UI components
+  /context         # React context providers
   /hooks           # Custom React hooks
   /services        # API and service integrations
   /types           # TypeScript type definitions
@@ -35,6 +36,7 @@ The project follows a structured organization:
   /navigation      # Navigation configuration
   /utils           # Utility functions
   /mockData        # Mock data for development
+  /supabase        # Supabase client and related code
 ```
 
 ## Development
@@ -44,6 +46,7 @@ The project follows a structured organization:
 - Node.js (v14 or later)
 - npm or yarn
 - Expo CLI
+- Supabase account
 
 ### Setup
 
@@ -52,10 +55,33 @@ The project follows a structured organization:
 ```
 npm install
 ```
-3. Start the development server:
+3. Set up Supabase:
+   - Create a new project on [Supabase](https://supabase.com/)
+   - Enable email/password authentication in the Auth settings
+   - Create your database tables (or use the provided SQL setup scripts)
+   - Copy your Supabase URL and anon key
+
+4. Create a `.env` file in the root directory with your Supabase credentials:
+```
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+5. Update the Supabase client in `src/supabase/client.ts` with your credentials.
+
+6. Start the development server:
 ```
 npm start
 ```
+
+### Supabase Setup
+
+To enable authentication in your Supabase project:
+
+1. Go to Authentication > Settings
+2. Enable Email provider
+3. Configure any additional providers as needed (Google, Apple, etc.)
+4. Set up redirects for email confirmation and password recovery
 
 ### Running on a Device
 
@@ -64,8 +90,8 @@ npm start
 
 ## Future Enhancements
 
-- Implement Supabase authentication
-- Connect to a real backend API
+- Add more authentication providers (Google, Apple)
+- Implement real-time updates for trip changes
 - Add offline support
 - Push notifications for trip updates
 - Interactive maps for activities
